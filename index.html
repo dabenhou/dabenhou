@@ -2,13 +2,22 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>💌李媛媛的工作台</title>
+    
     <!-- 浏览器标签页图标 -->
     <link rel="icon" type="image/png" href="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEYK0xqauO39A4ptgjHQkdQd-URuBNSdwACYSEAAvjGWFeL6ef78L8Kej0E.png">
     
-    <!-- 苹果设备桌面图标 -->
-    <link rel="apple-touch-icon" href="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEYK0xqauO39A4ptgjHQkdQd-URuBNSdwACYSEAAvjGWFeL6ef78L8Kej0E.png">
+    <!-- 苹果桌面图标 -->
+    <link rel="apple-touch-icon-precomposed" sizes="180x180" href="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEYK0xqauO39A4ptgjHQkdQd-URuBNSdwACYSEAAvjGWFeL6ef78L8Kej0E.png">
+    
+    <!-- PWA配置 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ff9a9e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="李媛媛">
+    
     <style>
         * {
             margin: 0;
@@ -31,13 +40,28 @@
 
         /* 头部 */
         .header {
-            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-            border-radius: 20px;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 15px;
-            box-shadow: 0 10px 30px rgba(255, 154, 158, 0.3);
-        }
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+    border-radius: 20px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 15px;
+    box-shadow: 0 10px 30px rgba(255, 154, 158, 0.3);
+}
+
+
+.header h1 {
+    color: #fff;
+    font-size: 24px;
+    margin-bottom: 5px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.header p {
+    color: rgba(255,255,255,0.95);
+    font-size: 14px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
 
         .header h1 {
             color: #fff;
@@ -121,6 +145,10 @@
             align-items: center;
             gap: 5px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            /* 解决iOS点击无反应 */
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .nav-tab.active {
@@ -193,7 +221,6 @@
         .income { color: #51cf66; }
         .expense { color: #ff6b6b; }
 
-        /* 修复：开启自动换行，限制最小宽度，不会溢出 */
         .add-transaction {
             display: flex;
             gap: 10px;
@@ -440,6 +467,10 @@
             text-align: center;
             cursor: pointer;
             transition: all 0.3s;
+            /* 解决iOS点击无反应 */
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .exercise-type:hover {
@@ -584,8 +615,8 @@
     <div class="app-container">
         <!-- 头部 -->
         <div class="header">
-            <div class="dog-avatar">💌</div>
-            <h1>奔奔狗工作台</h1>
+            <div class="dog-avatar">🐶</div>
+            <h1>李媛媛的工作台</h1>
             <p id="currentDate"></p>
         </div>
 
@@ -778,12 +809,12 @@
 
     <script>
         // 数据存储
-        let transactions = JSON.parse(localStorage.getItem('bbg_transactions')) || [];
-        let plans = JSON.parse(localStorage.getItem('bbg_plans')) || [];
-        let waterData = JSON.parse(localStorage.getItem('bbg_water')) || { count: 0, date: new Date().toDateString() };
-        let exercises = JSON.parse(localStorage.getItem('bbg_exercises')) || [];
-        let memos = JSON.parse(localStorage.getItem('bbg_memos')) || [];
-        let selectedExerciseType = 'running';
+        var transactions = JSON.parse(localStorage.getItem('bbg_transactions')) || [];
+        var plans = JSON.parse(localStorage.getItem('bbg_plans')) || [];
+        var waterData = JSON.parse(localStorage.getItem('bbg_water')) || { count: 0, date: new Date().toDateString() };
+        var exercises = JSON.parse(localStorage.getItem('bbg_exercises')) || [];
+        var memos = JSON.parse(localStorage.getItem('bbg_memos')) || [];
+        var selectedExerciseType = 'running';
 
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
@@ -796,37 +827,68 @@
 
         // 更新日期
         function updateDate() {
-            const now = new Date();
-            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            var now = new Date();
+            var options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
             document.getElementById('currentDate').textContent = now.toLocaleDateString('zh-CN', options);
         }
 
-        // 标签切换
+        // 标签切换（修复iOS点击无反应）
         function initTabs() {
-            document.querySelectorAll('.nav-tab').forEach(tab => {
+            var tabs = document.querySelectorAll('.nav-tab');
+            for (var i = 0; i < tabs.length; i++) {
+                var tab = tabs[i];
+                // 同时绑定touchstart和click，解决16Pro点击无反应
+                tab.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    handleTabClick(this);
+                }, { passive: false });
                 tab.addEventListener('click', function() {
-                    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                    this.classList.add('active');
-                    document.getElementById(this.dataset.tab).classList.add('active');
+                    handleTabClick(this);
                 });
-            });
+            }
         }
 
-        // 锻炼类型选择
+        function handleTabClick(tab) {
+            var allTabs = document.querySelectorAll('.nav-tab');
+            var allContents = document.querySelectorAll('.tab-content');
+            for (var i = 0; i < allTabs.length; i++) {
+                allTabs[i].className = 'nav-tab';
+            }
+            for (var j = 0; j < allContents.length; j++) {
+                allContents[j].className = 'tab-content';
+            }
+            tab.className = 'nav-tab active';
+            var tabId = tab.getAttribute('data-tab');
+            document.getElementById(tabId).className = 'tab-content active';
+        }
+
+        // 锻炼类型选择（修复iOS点击无反应）
         function initExerciseTypes() {
-            document.querySelectorAll('.exercise-type').forEach(type => {
+            var types = document.querySelectorAll('.exercise-type');
+            for (var i = 0; i < types.length; i++) {
+                var type = types[i];
+                type.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    handleExerciseClick(this);
+                }, { passive: false });
                 type.addEventListener('click', function() {
-                    document.querySelectorAll('.exercise-type').forEach(t => t.classList.remove('selected'));
-                    this.classList.add('selected');
-                    selectedExerciseType = this.dataset.type;
+                    handleExerciseClick(this);
                 });
-            });
+            }
+        }
+
+        function handleExerciseClick(type) {
+            var allTypes = document.querySelectorAll('.exercise-type');
+            for (var i = 0; i < allTypes.length; i++) {
+                allTypes[i].className = 'exercise-type';
+            }
+            type.className = 'exercise-type selected';
+            selectedExerciseType = type.getAttribute('data-type');
         }
 
         // 检查喝水重置
         function checkWaterReset() {
-            const today = new Date().toDateString();
+            var today = new Date().toDateString();
             if (waterData.date !== today) {
                 waterData = { count: 0, date: today };
                 saveWater();
@@ -835,22 +897,22 @@
 
         // 记账功能
         function addTransaction() {
-            const type = document.getElementById('transType').value;
-            const category = document.getElementById('transCategory').value;
-            const amount = parseFloat(document.getElementById('transAmount').value);
-            const desc = document.getElementById('transDesc').value || category;
+            var type = document.getElementById('transType').value;
+            var category = document.getElementById('transCategory').value;
+            var amount = parseFloat(document.getElementById('transAmount').value);
+            var desc = document.getElementById('transDesc').value || category;
 
             if (!amount || amount <= 0) {
                 alert('请输入有效金额！');
                 return;
             }
 
-            const transaction = {
+            var transaction = {
                 id: Date.now(),
-                type,
-                category,
-                amount,
-                desc,
+                type: type,
+                category: category,
+                amount: amount,
+                desc: desc,
                 date: new Date().toISOString()
             };
 
@@ -864,7 +926,7 @@
         }
 
         function deleteTransaction(id) {
-            transactions = transactions.filter(t => t.id !== id);
+            transactions = transactions.filter(function(t) { return t.id !== id; });
             saveTransactions();
             renderTransactions();
             updateStats();
@@ -875,41 +937,33 @@
         }
 
         function renderTransactions() {
-            const list = document.getElementById('transactionList');
+            var list = document.getElementById('transactionList');
             if (transactions.length === 0) {
-                list.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">📭</div>
-                        <p>暂无记录，开始记账吧~</p>
-                    </div>
-                `;
+                list.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>暂无记录，开始记账吧~</p></div>';
                 return;
             }
 
-            list.innerHTML = transactions.map(t => `
-                <div class="transaction-item">
-                    <div class="info">
-                        <span class="category">${t.category}</span>
-                        <span class="desc">${t.desc}</span>
-                    </div>
-                    <span class="amount ${t.type}">${t.type === 'income' ? '+' : '-'}${t.amount.toFixed(2)}</span>
-                    <button class="btn-delete" onclick="deleteTransaction(${t.id})">删除</button>
-            `).join('');
+            var html = '';
+            for (var i = 0; i < transactions.length; i++) {
+                var t = transactions[i];
+                html += '<div class="transaction-item"><div class="info"><span class="category">' + t.category + '</span><span class="desc">' + t.desc + '</span></div><span class="amount ' + t.type + '">' + (t.type === 'income' ? '+' : '-') + t.amount.toFixed(2) + '</span><button class="btn-delete" onclick="deleteTransaction(' + t.id + ')">删除</button></div>';
+            }
+            list.innerHTML = html;
         }
 
         // 计划功能
         function addPlan() {
-            const input = document.getElementById('planInput');
-            const text = input.value.trim();
+            var input = document.getElementById('planInput');
+            var text = input.value.trim();
 
             if (!text) {
                 alert('请输入计划内容！');
                 return;
             }
 
-            const plan = {
+            var plan = {
                 id: Date.now(),
-                text,
+                text: text,
                 completed: false,
                 date: new Date().toISOString()
             };
@@ -923,17 +977,19 @@
         }
 
         function togglePlan(id) {
-            const plan = plans.find(p => p.id === id);
-            if (plan) {
-                plan.completed = !plan.completed;
-                savePlans();
-                renderPlans();
-                updateStats();
+            for (var i = 0; i < plans.length; i++) {
+                if (plans[i].id === id) {
+                    plans[i].completed = !plans[i].completed;
+                    break;
+                }
             }
+            savePlans();
+            renderPlans();
+            updateStats();
         }
 
         function deletePlan(id) {
-            plans = plans.filter(p => p.id !== id);
+            plans = plans.filter(function(p) { return p.id !== id; });
             savePlans();
             renderPlans();
             updateStats();
@@ -944,24 +1000,18 @@
         }
 
         function renderPlans() {
-            const list = document.getElementById('planList');
+            var list = document.getElementById('planList');
             if (plans.length === 0) {
-                list.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">📋</div>
-                        <p>还没有计划，添加一个吧~</p>
-                    </div>
-                `;
+                list.innerHTML = '<div class="empty-state"><div class="icon">📋</div><p>还没有计划，添加一个吧~</p></div>';
                 return;
             }
 
-            list.innerHTML = plans.map(p => `
-                <div class="plan-item ${p.completed ? 'completed' : ''}">
-                    <input type="checkbox" ${p.completed ? 'checked' : ''} onchange="togglePlan(${p.id})">
-                    <span class="text">${p.text}</span>
-                    <button class="btn-delete" onclick="deletePlan(${p.id})">删除</button>
-                </div>
-            `).join('');
+            var html = '';
+            for (var i = 0; i < plans.length; i++) {
+                var p = plans[i];
+                html += '<div class="plan-item ' + (p.completed ? 'completed' : '') + '"><input type="checkbox" ' + (p.completed ? 'checked' : '') + ' onchange="togglePlan(' + p.id + ')"><span class="text">' + p.text + '</span><button class="btn-delete" onclick="deletePlan(' + p.id + ')">删除</button></div>';
+            }
+            list.innerHTML = html;
         }
 
         // 喝水功能
@@ -986,9 +1036,9 @@
         }
 
         function renderWater() {
-            const count = waterData.count;
-            const target = 8;
-            const percentage = Math.min((count / target) * 100, 100);
+            var count = waterData.count;
+            var target = 8;
+            var percentage = Math.min((count / target) * 100, 100);
 
             document.getElementById('waterDisplay').textContent = count;
             document.getElementById('waterProgress').style.width = percentage + '%';
@@ -996,24 +1046,24 @@
 
         // 锻炼功能
         function recordExercise() {
-            const durationInput = document.getElementById('exerciseDuration');
-            const duration = parseInt(durationInput.value);
+            var durationInput = document.getElementById('exerciseDuration');
+            var duration = parseInt(durationInput.value);
 
             if (!duration || duration <= 0) {
                 alert('请输入有效时长！');
                 return;
             }
 
-            const exerciseType = document.querySelector('.exercise-type.selected');
-            const calPer10Min = parseInt(exerciseType.dataset.cal);
-            const calories = Math.round((duration / 10) * calPer10Min);
+            var exerciseType = document.querySelector('.exercise-type.selected');
+            var calPer10Min = parseInt(exerciseType.getAttribute('data-cal'));
+            var calories = Math.round((duration / 10) * calPer10Min);
 
-            const exercise = {
+            var exercise = {
                 id: Date.now(),
                 type: exerciseType.querySelector('.name').textContent,
                 icon: exerciseType.querySelector('.icon').textContent,
-                duration,
-                calories,
+                duration: duration,
+                calories: calories,
                 date: new Date().toISOString()
             };
 
@@ -1030,41 +1080,33 @@
         }
 
         function renderExercises() {
-            const list = document.getElementById('exerciseHistory');
+            var list = document.getElementById('exerciseHistory');
             if (exercises.length === 0) {
-                list.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">🏃</div>
-                        <p>开始运动，记录你的锻炼吧~</p>
-                    </div>
-                `;
+                list.innerHTML = '<div class="empty-state"><div class="icon">🏃</div><p>开始运动，记录你的锻炼吧~</p></div>';
                 return;
             }
 
-            list.innerHTML = exercises.map(e => `
-                <div class="exercise-item">
-                    <div class="info">
-                        <span class="category">${e.icon}</span>
-                        <span class="desc">${e.type} ${e.duration}分钟</span>
-                    </div>
-                    <span class="amount expense">-${e.calories}卡</span>
-                </div>
-            `).join('');
+            var html = '';
+            for (var i = 0; i < exercises.length; i++) {
+                var e = exercises[i];
+                html += '<div class="exercise-item"><div class="info"><span class="category">' + e.icon + '</span><span class="desc">' + e.type + ' ' + e.duration + '分钟</span></div><span class="amount expense">-' + e.calories + '卡</span></div>';
+            }
+            list.innerHTML = html;
         }
 
         // 备忘录功能
         function addMemo() {
-            const input = document.getElementById('memoInput');
-            const content = input.value.trim();
+            var input = document.getElementById('memoInput');
+            var content = input.value.trim();
 
             if (!content) {
                 alert('请输入备忘内容！');
                 return;
             }
 
-            const memo = {
+            var memo = {
                 id: Date.now(),
-                content,
+                content: content,
                 date: new Date().toISOString()
             };
 
@@ -1076,7 +1118,7 @@
         }
 
         function deleteMemo(id) {
-            memos = memos.filter(m => m.id !== id);
+            memos = memos.filter(function(m) { return m.id !== id; });
             saveMemos();
             renderMemos();
         }
@@ -1086,54 +1128,61 @@
         }
 
         function renderMemos() {
-            const list = document.getElementById('memoList');
+            var list = document.getElementById('memoList');
             if (memos.length === 0) {
-                list.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">📝</div>
-                        <p>还没有备忘，记录点什么吧~</p>
-                    </div>
-                `;
+                list.innerHTML = '<div class="empty-state"><div class="icon">📝</div><p>还没有备忘，记录点什么吧~</p></div>';
                 return;
             }
 
-            list.innerHTML = memos.map(m => `
-                <div class="memo-item">
-                    <div class="content">${m.content}</div>
-                    <div class="time">${new Date(m.date).toLocaleString('zh-CN')}</div>
-                    <button class="btn-delete-memo" onclick="deleteMemo(${m.id})">删除</button>
-                </div>
-            `).join('');
+            var html = '';
+            for (var i = 0; i < memos.length; i++) {
+                var m = memos[i];
+                html += '<div class="memo-item"><div class="content">' + m.content + '</div><div class="time">' + new Date(m.date).toLocaleString('zh-CN') + '</div><button class="btn-delete-memo" onclick="deleteMemo(' + m.id + ')">删除</button></div>';
+            }
+            list.innerHTML = html;
         }
 
         // 更新统计
         function updateStats() {
+            var today = new Date().toDateString();
+            
             // 今日支出
-            const today = new Date().toDateString();
-            const todayExpense = transactions
-                .filter(t => t.type === 'expense' && new Date(t.date).toDateString() === today)
-                .reduce((sum, t) => sum + t.amount, 0);
+            var todayExpense = 0;
+            for (var i = 0; i < transactions.length; i++) {
+                if (transactions[i].type === 'expense' && new Date(transactions[i].date).toDateString() === today) {
+                    todayExpense += transactions[i].amount;
+                }
+            }
             document.getElementById('todayExpense').textContent = todayExpense.toFixed(0);
 
             // 待办事项
-            const pending = plans.filter(p => !p.completed).length;
+            var pending = 0;
+            for (var j = 0; j < plans.length; j++) {
+                if (!plans[j].completed) pending++;
+            }
             document.getElementById('pendingPlans').textContent = pending;
 
             // 喝水
             document.getElementById('waterCount').textContent = waterData.count;
 
             // 今日卡路里
-            const todayCalories = exercises
-                .filter(e => new Date(e.date).toDateString() === today)
-                .reduce((sum, e) => sum + e.calories, 0);
+            var todayCalories = 0;
+            for (var k = 0; k < exercises.length; k++) {
+                if (new Date(exercises[k].date).toDateString() === today) {
+                    todayCalories += exercises[k].calories;
+                }
+            }
             document.getElementById('todayCalories').textContent = todayCalories;
             document.getElementById('totalCalories').textContent = todayCalories;
         }
 
         // 总收入/支出
         function updateTotalSummary() {
-            const income = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-            const expense = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+            var income = 0, expense = 0;
+            for (var i = 0; i < transactions.length; i++) {
+                if (transactions[i].type === 'income') income += transactions[i].amount;
+                else expense += transactions[i].amount;
+            }
             document.getElementById('totalIncome').textContent = '+' + income.toFixed(0);
             document.getElementById('totalExpense').textContent = '-' + expense.toFixed(0);
         }
@@ -1148,13 +1197,6 @@
             updateStats();
             updateTotalSummary();
         }
-
-        // 监听数据变化更新汇总
-        const originalSaveTransactions = saveTransactions;
-        saveTransactions = function() {
-            originalSaveTransactions();
-            updateTotalSummary();
-        };
     </script>
 </body>
 </html>
