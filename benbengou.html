@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐕 奔奔狗工作台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe4e1 100%);
+            min-height: 100vh;
+            padding: 10px;
+            padding-bottom: 80px;
+        }
+
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        /* 头部 */
+        .header {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 15px;
+            box-shadow: 0 10px 30px rgba(255, 154, 158, 0.3);
+        }
+
+        .header h1 {
+            color: #fff;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: rgba(255,255,255,0.9);
+            font-size: 14px;
+        }
+
+        .dog-avatar {
+            font-size: 60px;
+            margin-bottom: 10px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* 统计卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border-radius: 15px;
+            padding: 12px 8px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .stat-card .icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+
+        .stat-card .label {
+            font-size: 11px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        /* 导航标签 */
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            overflow-x: auto;
+            padding: 5px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .nav-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .nav-tab {
+            flex-shrink: 0;
+            background: #fff;
+            border: 2px solid transparent;
+            border-radius: 20px;
+            padding: 10px 18px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            color: #fff;
+            border-color: #ff9a9e;
+        }
+
+        .nav-tab:not(.active):hover {
+            border-color: #ff9a9e;
+        }
+
+        /* 内容区域 */
+        .content-area {
+            background: #fff;
+            border-radius: 20px;
+            padding: 20px;
+            min-height: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 记账模块 */
+        .accounting-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #fff5f5;
+        }
+
+        .accounting-header h3 {
+            color: #ff6b6b;
+            font-size: 18px;
+        }
+
+        .accounting-summary {
+            display: flex;
+            gap: 15px;
+        }
+
+        .summary-item {
+            text-align: center;
+        }
+
+        .summary-item .amount {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .summary-item .label {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .income { color: #51cf66; }
+        .expense { color: #ff6b6b; }
+
+        .add-transaction {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .add-transaction input, .add-transaction select {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #ffe4e1;
+            border-radius: 12px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .add-transaction input:focus, .add-transaction select:focus {
+            border-color: #ff9a9e;
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-add:hover {
+            transform: scale(1.05);
+        }
+
+        .transaction-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #fff5f5;
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+
+        .transaction-item .info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .transaction-item .category {
+            font-size: 20px;
+        }
+
+        .transaction-item .desc {
+            font-size: 14px;
+            color: #333;
+        }
+
+        .transaction-item .amount {
+            font-weight: bold;
+        }
+
+        .btn-delete {
+            background: #ff6b6b;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        /* 计划模块 */
+        .plan-input-area {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .plan-input-area input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #ffe4e1;
+            border-radius: 12px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .plan-input-area input:focus {
+            border-color: #ff9a9e;
+        }
+
+        .plan-list {
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .plan-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #fff5f5;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+        }
+
+        .plan-item.completed {
+            opacity: 0.6;
+        }
+
+        .plan-item.completed .text {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        .plan-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .plan-item .text {
+            flex: 1;
+            font-size: 14px;
+            color: #333;
+        }
+
+        /* 喝水模块 */
+        .water-display {
+            text-align: center;
+            padding: 30px 0;
+        }
+
+        .water-count {
+            font-size: 60px;
+            font-weight: bold;
+            color: #339af0;
+            margin: 10px 0;
+        }
+
+        .water-target {
+            color: #999;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .water-progress {
+            background: #e7f5ff;
+            border-radius: 15px;
+            height: 20px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .water-progress-bar {
+            background: linear-gradient(90deg, #339af0, #228be6);
+            height: 100%;
+            border-radius: 15px;
+            transition: width 0.5s ease;
+        }
+
+        .water-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-water {
+            background: linear-gradient(135deg, #339af0, #228be6);
+            color: #fff;
+            border: none;
+            border-radius: 15px;
+            padding: 15px 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-water:hover {
+            transform: scale(1.05);
+        }
+
+        /* 锻炼模块 */
+        .exercise-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .exercise-header h3 {
+            color: #ff6b6b;
+            font-size: 18px;
+        }
+
+        .exercise-stats {
+            background: #fff5f5;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .exercise-stats .calories {
+            font-size: 32px;
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+
+        .exercise-stats .label {
+            color: #999;
+            font-size: 14px;
+        }
+
+        .exercise-types {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .exercise-type {
+            background: #fff5f5;
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .exercise-type:hover {
+            background: #ffe4e1;
+        }
+
+        .exercise-type.selected {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            color: #fff;
+        }
+
+        .exercise-type .icon {
+            font-size: 30px;
+            margin-bottom: 5px;
+        }
+
+        .exercise-type .name {
+            font-size: 14px;
+        }
+
+        .exercise-type .cal {
+            font-size: 12px;
+            color: #999;
+            margin-top: 3px;
+        }
+
+        .exercise-type.selected .cal {
+            color: rgba(255,255,255,0.8);
+        }
+
+        .btn-record {
+            width: 100%;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            color: #fff;
+            border: none;
+            border-radius: 15px;
+            padding: 15px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .exercise-history {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .exercise-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #fff5f5;
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+
+        /* 备忘录模块 */
+        .memo-input-area {
+            margin-bottom: 20px;
+        }
+
+        .memo-input-area textarea {
+            width: 100%;
+            height: 120px;
+            padding: 15px;
+            border: 2px solid #ffe4e1;
+            border-radius: 15px;
+            font-size: 14px;
+            resize: none;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .memo-input-area textarea:focus {
+            border-color: #ff9a9e;
+        }
+
+        .memo-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .memo-item {
+            background: #fff5f5;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .memo-item .content {
+            font-size: 14px;
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .memo-item .time {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .memo-item .btn-delete-memo {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ff6b6b;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state .icon {
+            font-size: 50px;
+            margin-bottom: 10px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 380px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .exercise-types {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 头部 -->
+        <div class="header">
+            <div class="dog-avatar">🐕</div>
+            <h1>奔奔狗工作台</h1>
+            <p id="currentDate"></p>
+        </div>
+
+        <!-- 统计卡片 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="icon">💰</div>
+                <div class="value" id="todayExpense">0</div>
+                <div class="label">今日支出</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">📋</div>
+                <div class="value" id="pendingPlans">0</div>
+                <div class="label">待办事项</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">💧</div>
+                <div class="value" id="waterCount">0</div>
+                <div class="label">喝水(杯)</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">🔥</div>
+                <div class="value" id="todayCalories">0</div>
+                <div class="label">今日卡路里</div>
+            </div>
+        </div>
+
+        <!-- 导航标签 -->
+        <div class="nav-tabs">
+            <div class="nav-tab active" data-tab="accounting">
+                <span>💰</span> 记账
+            </div>
+            <div class="nav-tab" data-tab="plan">
+                <span>📋</span> 计划
+            </div>
+            <div class="nav-tab" data-tab="water">
+                <span>💧</span> 喝水
+            </div>
+            <div class="nav-tab" data-tab="exercise">
+                <span>🏃</span> 锻炼
+            </div>
+            <div class="nav-tab" data-tab="memo">
+                <span>📝</span> 备忘录
+            </div>
+        </div>
+
+        <!-- 内容区域 -->
+        <div class="content-area">
+            <!-- 记账 -->
+            <div class="tab-content active" id="accounting">
+                <div class="accounting-header">
+                    <h3>💰 记账本</h3>
+                    <div class="accounting-summary">
+                        <div class="summary-item">
+                            <div class="amount income" id="totalIncome">+0</div>
+                            <div class="label">收入</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="amount expense" id="totalExpense">-0</div>
+                            <div class="label">支出</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="add-transaction">
+                    <select id="transType">
+                        <option value="expense">支出</option>
+                        <option value="income">收入</option>
+                    </select>
+                    <select id="transCategory">
+                        <option value="🍜">🍜 餐饮</option>
+                        <option value="🚗">🚗 交通</option>
+                        <option value="🛒">🛒 购物</option>
+                        <option value="🏠">🏠 居住</option>
+                        <option value="🎮">🎮 娱乐</option>
+                        <option value="💊">💊 医疗</option>
+                        <option value="📚">📚 学习</option>
+                        <option value="💼">💼 工资</option>
+                        <option value="🎁">🎁 红包</option>
+                        <option value="📈">📈 理财</option>
+                        <option value="📦">📦 其他</option>
+                    </select>
+                    <input type="number" id="transAmount" placeholder="金额" step="0.01">
+                    <input type="text" id="transDesc" placeholder="备注">
+                    <button class="btn-add" onclick="addTransaction()">添加</button>
+                </div>
+                <div class="transaction-list" id="transactionList">
+                    <div class="empty-state">
+                        <div class="icon">📭</div>
+                        <p>暂无记录，开始记账吧~</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 计划 -->
+            <div class="tab-content" id="plan">
+                <div class="plan-input-area">
+                    <input type="text" id="planInput" placeholder="添加新计划...">
+                    <button class="btn-add" onclick="addPlan()">添加</button>
+                </div>
+                <div class="plan-list" id="planList">
+                    <div class="empty-state">
+                        <div class="icon">📋</div>
+                        <p>还没有计划，添加一个吧~</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 喝水 -->
+            <div class="tab-content" id="water">
+                <div class="water-display">
+                    <div class="water-count" id="waterDisplay">0</div>
+                    <div class="water-target">目标: 8杯 (2000ml)</div>
+                    <div class="water-progress">
+                        <div class="water-progress-bar" id="waterProgress" style="width: 0%"></div>
+                    </div>
+                    <div class="water-buttons">
+                        <button class="btn-water" onclick="addWater(1)">💧 +1杯</button>
+                        <button class="btn-water" onclick="addWater(2)">💧💧 +2杯</button>
+                        <button class="btn-water" onclick="resetWater()">🔄 重置</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 锻炼 -->
+            <div class="tab-content" id="exercise">
+                <div class="exercise-header">
+                    <h3>🏃 锻炼记录</h3>
+                </div>
+                <div class="exercise-stats">
+                    <div class="calories" id="totalCalories">0</div>
+                    <div class="label">今日消耗卡路里</div>
+                </div>
+                <div class="exercise-types">
+                    <div class="exercise-type selected" data-type="running" data-cal="100">
+                        <div class="icon">🏃</div>
+                        <div class="name">跑步</div>
+                        <div class="cal">100卡/10分钟</div>
+                    </div>
+                    <div class="exercise-type" data-type="walking" data-cal="50">
+                        <div class="icon">🚶</div>
+                        <div class="name">散步</div>
+                        <div class="cal">50卡/10分钟</div>
+                    </div>
+                    <div class="exercise-type" data-type="cycling" data-cal="80">
+                        <div class="icon">🚴</div>
+                        <div class="name">骑行</div>
+                        <div class="cal">80卡/10分钟</div>
+                    </div>
+                    <div class="exercise-type" data-type="swimming" data-cal="120">
+                        <div class="icon">🏊</div>
+                        <div class="name">游泳</div>
+                        <div class="cal">120卡/10分钟</div>
+                    </div>
+                    <div class="exercise-type" data-type="yoga" data-cal="40">
+                        <div class="icon">🧘</div>
+                        <div class="name">瑜伽</div>
+                        <div class="cal">40卡/10分钟</div>
+                    </div>
+                    <div class="exercise-type" data-type="fitness" data-cal="150">
+                        <div class="icon">💪</div>
+                        <div class="name">健身</div>
+                        <div class="cal">150卡/10分钟</div>
+                    </div>
+                </div>
+                <input type="number" id="exerciseDuration" placeholder="锻炼时长(分钟)" style="width:100%;padding:12px;border:2px solid #ffe4e1;border-radius:12px;margin-bottom:10px;outline:none;">
+                <button class="btn-record" onclick="recordExercise()">记录锻炼</button>
+                <div class="exercise-history" id="exerciseHistory">
+                    <div class="empty-state">
+                        <div class="icon">🏃</div>
+                        <p>开始运动，记录你的锻炼吧~</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 备忘录 -->
+            <div class="tab-content" id="memo">
+                <div class="memo-input-area">
+                    <textarea id="memoInput" placeholder="记录你的想法..."></textarea>
+                    <button class="btn-add" style="width:100%;margin-top:10px;" onclick="addMemo()">保存备忘</button>
+                </div>
+                <div class="memo-list" id="memoList">
+                    <div class="empty-state">
+                        <div class="icon">📝</div>
+                        <p>还没有备忘，记录点什么吧~</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 数据存储
+        let transactions = JSON.parse(localStorage.getItem('bbg_transactions')) || [];
+        let plans = JSON.parse(localStorage.getItem('bbg_plans')) || [];
+        let waterData = JSON.parse(localStorage.getItem('bbg_water')) || { count: 0, date: new Date().toDateString() };
+        let exercises = JSON.parse(localStorage.getItem('bbg_exercises')) || [];
+        let memos = JSON.parse(localStorage.getItem('bbg_memos')) || [];
+        let selectedExerciseType = 'running';
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDate();
+            initTabs();
+            initExerciseTypes();
+            renderAll();
+            checkWaterReset();
+        });
+
+        // 更新日期
+        function updateDate() {
+            const now = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('zh-CN', options);
+        }
+
+        // 标签切换
+        function initTabs() {
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    document.getElementById(this.dataset.tab).classList.add('active');
+                });
+            });
+        }
+
+        // 锻炼类型选择
+        function initExerciseTypes() {
+            document.querySelectorAll('.exercise-type').forEach(type => {
+                type.addEventListener('click', function() {
+                    document.querySelectorAll('.exercise-type').forEach(t => t.classList.remove('selected'));
+                    this.classList.add('selected');
+                    selectedExerciseType = this.dataset.type;
+                });
+            });
+        }
+
+        // 检查喝水重置
+        function checkWaterReset() {
+            const today = new Date().toDateString();
+            if (waterData.date !== today) {
+                waterData = { count: 0, date: today };
+                saveWater();
+            }
+        }
+
+        // 记账功能
+        function addTransaction() {
+            const type = document.getElementById('transType').value;
+            const category = document.getElementById('transCategory').value;
+            const amount = parseFloat(document.getElementById('transAmount').value);
+            const desc = document.getElementById('transDesc').value || category;
+
+            if (!amount || amount <= 0) {
+                alert('请输入有效金额！');
+                return;
+            }
+
+            const transaction = {
+                id: Date.now(),
+                type,
+                category,
+                amount,
+                desc,
+                date: new Date().toISOString()
+            };
+
+            transactions.unshift(transaction);
+            saveTransactions();
+            renderTransactions();
+            updateStats();
+
+            document.getElementById('transAmount').value = '';
+            document.getElementById('transDesc').value = '';
+        }
+
+        function deleteTransaction(id) {
+            transactions = transactions.filter(t => t.id !== id);
+            saveTransactions();
+            renderTransactions();
+            updateStats();
+        }
+
+        function saveTransactions() {
+            localStorage.setItem('bbg_transactions', JSON.stringify(transactions));
+        }
+
+        function renderTransactions() {
+            const list = document.getElementById('transactionList');
+            if (transactions.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📭</div>
+                        <p>暂无记录，开始记账吧~</p>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = transactions.map(t => `
+                <div class="transaction-item">
+                    <div class="info">
+                        <span class="category">${t.category}</span>
+                        <span class="desc">${t.desc}</span>
+                    </div>
+                    <span class="amount ${t.type}">${t.type === 'income' ? '+' : '-'}${t.amount.toFixed(2)}</span>
+                    <button class="btn-delete" onclick="deleteTransaction(${t.id})">删除</button>
+                </div>
+            `).join('');
+        }
+
+        // 计划功能
+        function addPlan() {
+            const input = document.getElementById('planInput');
+            const text = input.value.trim();
+
+            if (!text) {
+                alert('请输入计划内容！');
+                return;
+            }
+
+            const plan = {
+                id: Date.now(),
+                text,
+                completed: false,
+                date: new Date().toISOString()
+            };
+
+            plans.unshift(plan);
+            savePlans();
+            renderPlans();
+            updateStats();
+
+            input.value = '';
+        }
+
+        function togglePlan(id) {
+            const plan = plans.find(p => p.id === id);
+            if (plan) {
+                plan.completed = !plan.completed;
+                savePlans();
+                renderPlans();
+                updateStats();
+            }
+        }
+
+        function deletePlan(id) {
+            plans = plans.filter(p => p.id !== id);
+            savePlans();
+            renderPlans();
+            updateStats();
+        }
+
+        function savePlans() {
+            localStorage.setItem('bbg_plans', JSON.stringify(plans));
+        }
+
+        function renderPlans() {
+            const list = document.getElementById('planList');
+            if (plans.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📋</div>
+                        <p>还没有计划，添加一个吧~</p>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = plans.map(p => `
+                <div class="plan-item ${p.completed ? 'completed' : ''}">
+                    <input type="checkbox" ${p.completed ? 'checked' : ''} onchange="togglePlan(${p.id})">
+                    <span class="text">${p.text}</span>
+                    <button class="btn-delete" onclick="deletePlan(${p.id})">删除</button>
+                </div>
+            `).join('');
+        }
+
+        // 喝水功能
+        function addWater(cups) {
+            waterData.count += cups;
+            saveWater();
+            renderWater();
+            updateStats();
+        }
+
+        function resetWater() {
+            if (confirm('确定要重置喝水记录吗？')) {
+                waterData.count = 0;
+                saveWater();
+                renderWater();
+                updateStats();
+            }
+        }
+
+        function saveWater() {
+            localStorage.setItem('bbg_water', JSON.stringify(waterData));
+        }
+
+        function renderWater() {
+            const count = waterData.count;
+            const target = 8;
+            const percentage = Math.min((count / target) * 100, 100);
+
+            document.getElementById('waterDisplay').textContent = count;
+            document.getElementById('waterProgress').style.width = percentage + '%';
+        }
+
+        // 锻炼功能
+        function recordExercise() {
+            const durationInput = document.getElementById('exerciseDuration');
+            const duration = parseInt(durationInput.value);
+
+            if (!duration || duration <= 0) {
+                alert('请输入有效时长！');
+                return;
+            }
+
+            const exerciseType = document.querySelector('.exercise-type.selected');
+            const calPer10Min = parseInt(exerciseType.dataset.cal);
+            const calories = Math.round((duration / 10) * calPer10Min);
+
+            const exercise = {
+                id: Date.now(),
+                type: exerciseType.querySelector('.name').textContent,
+                icon: exerciseType.querySelector('.icon').textContent,
+                duration,
+                calories,
+                date: new Date().toISOString()
+            };
+
+            exercises.unshift(exercise);
+            saveExercises();
+            renderExercises();
+            updateStats();
+
+            durationInput.value = '';
+        }
+
+        function saveExercises() {
+            localStorage.setItem('bbg_exercises', JSON.stringify(exercises));
+        }
+
+        function renderExercises() {
+            const list = document.getElementById('exerciseHistory');
+            if (exercises.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">🏃</div>
+                        <p>开始运动，记录你的锻炼吧~</p>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = exercises.map(e => `
+                <div class="exercise-item">
+                    <div class="info">
+                        <span class="category">${e.icon}</span>
+                        <span class="desc">${e.type} ${e.duration}分钟</span>
+                    </div>
+                    <span class="amount expense">-${e.calories}卡</span>
+                </div>
+            `).join('');
+        }
+
+        // 备忘录功能
+        function addMemo() {
+            const input = document.getElementById('memoInput');
+            const content = input.value.trim();
+
+            if (!content) {
+                alert('请输入备忘内容！');
+                return;
+            }
+
+            const memo = {
+                id: Date.now(),
+                content,
+                date: new Date().toISOString()
+            };
+
+            memos.unshift(memo);
+            saveMemos();
+            renderMemos();
+
+            input.value = '';
+        }
+
+        function deleteMemo(id) {
+            memos = memos.filter(m => m.id !== id);
+            saveMemos();
+            renderMemos();
+        }
+
+        function saveMemos() {
+            localStorage.setItem('bbg_memos', JSON.stringify(memos));
+        }
+
+        function renderMemos() {
+            const list = document.getElementById('memoList');
+            if (memos.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📝</div>
+                        <p>还没有备忘，记录点什么吧~</p>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = memos.map(m => `
+                <div class="memo-item">
+                    <div class="content">${m.content}</div>
+                    <div class="time">${new Date(m.date).toLocaleString('zh-CN')}</div>
+                    <button class="btn-delete-memo" onclick="deleteMemo(${m.id})">删除</button>
+                </div>
+            `).join('');
+        }
+
+        // 更新统计
+        function updateStats() {
+            // 今日支出
+            const today = new Date().toDateString();
+            const todayExpense = transactions
+                .filter(t => t.type === 'expense' && new Date(t.date).toDateString() === today)
+                .reduce((sum, t) => sum + t.amount, 0);
+            document.getElementById('todayExpense').textContent = todayExpense.toFixed(0);
+
+            // 待办事项
+            const pending = plans.filter(p => !p.completed).length;
+            document.getElementById('pendingPlans').textContent = pending;
+
+            // 喝水
+            document.getElementById('waterCount').textContent = waterData.count;
+
+            // 今日卡路里
+            const todayCalories = exercises
+                .filter(e => new Date(e.date).toDateString() === today)
+                .reduce((sum, e) => sum + e.calories, 0);
+            document.getElementById('todayCalories').textContent = todayCalories;
+            document.getElementById('totalCalories').textContent = todayCalories;
+        }
+
+        // 总收入/支出
+        function updateTotalSummary() {
+            const income = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+            const expense = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+            document.getElementById('totalIncome').textContent = '+' + income.toFixed(0);
+            document.getElementById('totalExpense').textContent = '-' + expense.toFixed(0);
+        }
+
+        // 渲染所有
+        function renderAll() {
+            renderTransactions();
+            renderPlans();
+            renderWater();
+            renderExercises();
+            renderMemos();
+            updateStats();
+            updateTotalSummary();
+        }
+
+        // 监听数据变化更新汇总
+        const originalSaveTransactions = saveTransactions;
+        saveTransactions = function() {
+            originalSaveTransactions();
+            updateTotalSummary();
+        };
+    </script>
+</body>
+</html>
