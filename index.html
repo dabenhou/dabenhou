@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🐕 奔奔狗工作台</title>
+    <title>💌奔奔狗工作台</title>
     <style>
         * {
             margin: 0;
@@ -188,14 +188,17 @@
         .income { color: #51cf66; }
         .expense { color: #ff6b6b; }
 
+        /* 修复：开启自动换行，限制最小宽度，不会溢出 */
         .add-transaction {
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
         .add-transaction input, .add-transaction select {
             flex: 1;
+            min-width: 120px;
             padding: 12px 15px;
             border: 2px solid #ffe4e1;
             border-radius: 12px;
@@ -217,6 +220,7 @@
             font-size: 14px;
             cursor: pointer;
             transition: transform 0.2s;
+            white-space: nowrap;
         }
 
         .btn-add:hover {
@@ -272,10 +276,12 @@
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
         .plan-input-area input {
             flex: 1;
+            min-width: 180px;
             padding: 12px 15px;
             border: 2px solid #ffe4e1;
             border-radius: 12px;
@@ -573,7 +579,7 @@
     <div class="app-container">
         <!-- 头部 -->
         <div class="header">
-            <div class="dog-avatar">🐕</div>
+            <div class="dog-avatar">💌</div>
             <h1>奔奔狗工作台</h1>
             <p id="currentDate"></p>
         </div>
@@ -883,7 +889,6 @@
                     </div>
                     <span class="amount ${t.type}">${t.type === 'income' ? '+' : '-'}${t.amount.toFixed(2)}</span>
                     <button class="btn-delete" onclick="deleteTransaction(${t.id})">删除</button>
-                </div>
             `).join('');
         }
 
